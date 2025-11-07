@@ -11,6 +11,9 @@ const __dirname = dirname(__filename);
 
 const app = express();
 
+// IMPORTANT: Add body parser middleware BEFORE your routes
+app.use(express.json());
+
 // Serve static files (HTML, CSS, JS)
 app.use(express.static(__dirname));
 
@@ -19,14 +22,25 @@ const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
 
+// Notion webhook endpoint
 app.post("/notion-webhook", (req, res) => {
   console.log("📥 Incoming webhook from Notion:");
-  console.log(JSON.stringify(req.body, null, 2)); // <-- print full body
+  console.log(JSON.stringify(req.body, null, 2));
 
-  // Handle verification request
-  if (req.body && req.body.verification_token) {
-    console.log("✅ Verification token received:", req.body.verification_token);
-    return res.status(200).send({ received: true });
+  // Handle verification request (Notion sends a challenge that must be echoed back)
+  if (req.body && req.body.type === "verification") {
+    console.log("Verification challenge received:", req.body.challenge);
+    // Echo back the challenge to verify the webhook
+    return res.status(200).json({ challenge: req.body.challenge });
+  }
+
+  // Handle actual webhook events
+  if (
+    (req.body && req.body.type === "page_updated") ||
+    req.body.type === "page_added"
+  ) {
+    console.log("Webhook event received:", req.body.type);
+    // Process the webhook event here
   }
 
   res.status(200).send("ok");
