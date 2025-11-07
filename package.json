@@ -5,12 +5,14 @@
     "description": "Website accessing Notion API",
     "main": "server.js",
     "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
         "start": "node server.js",
-        "dev": "node --watch server.js"
+        "develop": "npx nodemon server.js"
     },
     "dependencies": {
         "@notionhq/client": "^2.3.0",
         "dotenv": "^16.6.1",
-        "express": "^4.21.2"
+        "express": "^4.21.2",
+        "nodemon": "^3.1.10"
     }
 }

@@ -19,6 +19,19 @@ const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
 
+app.post("/notion-webhook", (req, res) => {
+  console.log("📥 Incoming webhook from Notion:");
+  console.log(JSON.stringify(req.body, null, 2)); // <-- print full body
+
+  // Handle verification request
+  if (req.body && req.body.verification_token) {
+    console.log("✅ Verification token received:", req.body.verification_token);
+    return res.status(200).send({ received: true });
+  }
+
+  res.status(200).send("ok");
+});
+
 // API endpoint to fetch Notion data
 app.get("/api/notion", async (req, res) => {
   try {
