@@ -1,0 +1,16 @@
+{
+    "name": "notion-website",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "Website accessing Notion API",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "node --watch server.js"
+    },
+    "dependencies": {
+        "@notionhq/client": "^2.3.0",
+        "dotenv": "^16.6.1",
+        "express": "^4.21.2"
+    }
+}
