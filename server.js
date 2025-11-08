@@ -11,17 +11,16 @@ const __dirname = dirname(__filename);
 
 const app = express();
 
-// IMPORTANT: Add body parser middleware BEFORE your routes
 app.use(express.json());
 
 // Serve static files (HTML, CSS, JS)
 app.use(express.static(__dirname));
 
-// Debug: Check if environment variables are loaded
-const notionToken = process.env.NOTION_KEY?.trim(); // Remove any whitespace
+// Checking if environment variables are loaded
+const notionToken = process.env.NOTION_KEY?.trim();
 const databaseId = process.env.NOTION_DATABASE_ID?.trim();
 
-console.log("🔍 Environment Check:");
+console.log("Environment Variables Check:");
 console.log("NOTION_KEY exists:", !!notionToken);
 console.log("NOTION_KEY length:", notionToken?.length || 0);
 console.log("NOTION_DATABASE_ID exists:", !!databaseId);
@@ -32,12 +31,12 @@ console.log(
 
 // Validate token before initializing client
 if (!notionToken) {
-  console.error("❌ ERROR: NOTION_KEY is not set!");
+  console.error("ERROR: NOTION_KEY is not set!");
 }
 
 // Initialize Notion client
 const notion = new Client({
-  auth: process.env.NOTION_TOKEN,
+  auth: notionToken,
 });
 
 // Notion webhook endpoint
@@ -45,10 +44,10 @@ app.post("/notion-webhook", (req, res) => {
   console.log("📥 Incoming webhook from Notion:");
   console.log(JSON.stringify(req.body, null, 2));
 
-  // Handle verification request (Notion sends a challenge that must be echoed back)
+  // Handle verification request
   if (req.body && req.body.type === "verification") {
     console.log("Verification challenge received:", req.body.challenge);
-    // Echo back the challenge to verify the webhook
+    // Send a response to verify the webhook
     return res.status(200).json({ challenge: req.body.challenge });
   }
 
@@ -67,8 +66,16 @@ app.post("/notion-webhook", (req, res) => {
 // API endpoint to fetch Notion data
 app.post("/api/notion", async (req, res) => {
   try {
-    // Replace with your actual database ID
-    const databaseId = process.env.NOTION_DATABASE_ID;
+    // Use the databaseId variable that was already validated
+    if (!databaseId) {
+      return res
+        .status(500)
+        .json({ error: "NOTION_DATABASE_ID is not configured" });
+    }
+
+    if (!notionToken) {
+      return res.status(500).json({ error: "NOTION_KEY is not configured" });
+    }
 
     const response = await notion.databases.query({
       database_id: databaseId,

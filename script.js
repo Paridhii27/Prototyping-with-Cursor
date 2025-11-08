@@ -29,5 +29,16 @@ async function fetchNotionData() {
   }
 }
 
+async function fetchNotionPage(pageId) {
+  try {
+    const response = await fetch("/api/notion/page", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
+}
 // Call when page loads
 document.addEventListener("DOMContentLoaded", fetchNotionData);
+document.addEventListener("DOMContentLoaded", fetchNotionPage);
