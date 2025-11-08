@@ -10,35 +10,37 @@ async function fetchNotionData() {
     const data = await response.json();
     console.log("Notion data:", data);
     console.log("Properties 1:", data.results[0].properties);
+    console.log(
+      "Project 1 Name:",
+      data.results[0].properties.Name.title[0].plain_text
+    );
     console.log("Project 1 Website:", data.results[0].properties.Website.url);
-    console.log("Project 1 Images:", data.results[0].properties.Images.id);
-    console.log("Properties 1:", data.results[1].properties);
-    console.log("Project 2 Website:", data.results[1].properties.Website.url);
-    console.log("Project 2 Images:", data.results[1].properties.Images.id);
-    console.log("Properties 1:", data.results[2].properties);
-    console.log("Project 3 Website:", data.results[2].properties.Website.url);
-    console.log("Project 3 Images:", data.results[2].properties.Images.id);
-    console.log("Properties 1:", data.results[3].properties);
-    console.log("Project 4 Website:", data.results[3].properties.Website.url);
-    console.log("Project 4 Images:", data.results[3].properties.Images.id);
-    console.log("Properties 1:", data.results[4].properties);
-    console.log("Project 5 Website:", data.results[4].properties.Website.url);
-    console.log("Project 5 Images:", data.results[4].properties.Images.id);
-    console.log("Properties 1:", data.results[5].properties);
-    console.log("Project 6 Website:", data.results[5].properties.Website.url);
-    console.log("Project 6 Images:", data.results[5].properties.Images.id);
-    // Process and display the data
-    if (data.results) {
-      const projectCards = document.querySelectorAll(".project-card");
-      data.results.forEach((page, index) => {
-        if (projectCards[index]) {
-          // Extract title or other properties from the page
-          const title =
-            page.properties?.Name?.title?.[0]?.plain_text ||
-            `Project ${index + 1}`;
-          projectCards[index].textContent = title;
+
+    if (data.results && Array.isArray(data.results)) {
+      const projectNames = document.querySelectorAll(".project-name");
+      const projectWebsites = document.querySelectorAll(".project-website");
+      data.results.forEach((result, index) => {
+        console.log(`Properties:`, result[index].properties);
+        if (result[index].properties) {
+          if (result[index].properties.Name?.title?.[0]?.plain_text) {
+            console.log(
+              `Project Name:`,
+              result[index].properties.Name.title[0].plain_text
+            );
+            projectNames.push(
+              data.results[index].properties.Name.title[0].plain_text
+            );
+          }
+          if (result.properties.Website?.url) {
+            console.log(`Project Website:`, result.properties.Website.url);
+            projectWebsites.push(data.results[index].properties.Website.url);
+          }
+          if (result.properties.Images?.id) {
+            console.log(`Project Images:`, result[index].properties.Images.id);
+          }
         }
       });
+      return data;
     }
   } catch (error) {
     console.error("Error fetching Notion data:", error);
