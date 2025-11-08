@@ -12,7 +12,7 @@ async function fetchNotionData() {
     console.log("Properties 1:", data.results[0].properties);
     console.log(
       "Project 1 Name:",
-      data.results[0].properties.Name.title[0].plain_text
+      data.results[0].properties.Title.title[0].plain_text
     );
     console.log("Project 1 Website:", data.results[0].properties.Website.url);
 
@@ -22,10 +22,10 @@ async function fetchNotionData() {
       data.results.forEach((result, index) => {
         console.log(`Properties:`, result[index].properties);
         if (result[index].properties) {
-          if (result[index].properties.Name?.title?.[0]?.plain_text) {
+          if (result[index].properties.Title?.title?.[0]?.plain_text) {
             console.log(
               `Project Name:`,
-              result[index].properties.Name.title[0].plain_text
+              result[index].properties.Title.title[0].plain_text
             );
             projectNames.push(
               data.results[index].properties.Name.title[0].plain_text
