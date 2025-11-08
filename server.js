@@ -1,8 +1,8 @@
 import express from "express";
-import { Client } from "@notionhq/client";
+import { Client, iteratePaginatedAPI } from "@notionhq/client";
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import { dirname } from "path";
 
 dotenv.config();
 
@@ -19,6 +19,7 @@ app.use(express.static(__dirname));
 // Checking if environment variables are loaded
 const notionToken = process.env.NOTION_KEY?.trim();
 const databaseId = process.env.NOTION_DATABASE_ID?.trim();
+const notionPageId = process.env.NOTION_PAGE_ID?.trim();
 
 console.log("Environment Variables Check:");
 console.log("NOTION_KEY exists:", !!notionToken);
@@ -28,6 +29,7 @@ console.log(
   "NOTION_DATABASE_ID:",
   databaseId ? `${databaseId.substring(0, 8)}...` : "missing"
 );
+console.log("NOTION_PAGE_ID exists:", !!notionPageId);
 
 // Validate token before initializing client
 if (!notionToken) {
@@ -38,6 +40,93 @@ if (!notionToken) {
 const notion = new Client({
   auth: notionToken,
 });
+
+// Helper function to get plain text from rich text blocks
+const getPlainTextFromRichText = (richText) => {
+  if (!richText || !Array.isArray(richText)) return "";
+  return richText.map((t) => t.plain_text).join("");
+};
+
+// Helper function to get media source text (for images, videos, files, etc.)
+const getMediaSourceText = (block) => {
+  const blockData = block[block.type];
+  let source = "";
+  let caption = "";
+
+  if (blockData.external) {
+    source = blockData.external.url || "";
+  } else if (blockData.file) {
+    source = blockData.file.url || "";
+  } else if (blockData.url) {
+    source = blockData.url || "";
+  }
+
+  if (blockData.caption && Array.isArray(blockData.caption)) {
+    caption = getPlainTextFromRichText(blockData.caption);
+  }
+
+  if (caption) {
+    return caption + ": " + source;
+  }
+  return source;
+};
+
+// Helper function to get text from any block type
+const getTextFromBlock = (block) => {
+  let text = "";
+
+  // Get rich text from blocks that support it
+  if (block[block.type]?.rich_text) {
+    text = getPlainTextFromRichText(block[block.type].rich_text);
+  } else {
+    // Handle other block types
+    switch (block.type) {
+      case "bookmark":
+        text = block.bookmark?.url || "";
+        break;
+      case "child_page":
+        text = block.child_page?.title || "";
+        break;
+      case "child_database":
+        text = block.child_database?.title || "";
+        break;
+      case "equation":
+        text = block.equation?.expression || "";
+        break;
+      case "link_preview":
+        text = block.link_preview?.url || "";
+        break;
+      case "embed":
+      case "video":
+      case "file":
+      case "image":
+      case "pdf":
+        text = getMediaSourceText(block);
+        break;
+      case "table":
+        text = "Table width: " + (block.table?.table_width || 0);
+        break;
+      case "table_of_contents":
+        text = "Table of Contents";
+        break;
+      case "divider":
+        text = "---";
+        break;
+      case "unsupported":
+        text = "[Unsupported block type]";
+        break;
+      default:
+        text = "";
+        break;
+    }
+  }
+
+  return {
+    type: block.type,
+    text: text,
+    has_children: block.has_children || false,
+  };
+};
 
 // Notion webhook endpoint
 app.post("/notion-webhook", (req, res) => {
@@ -84,6 +173,44 @@ app.post("/api/notion", async (req, res) => {
     res.json(response);
   } catch (error) {
     console.error("Error fetching from Notion:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// API endpoint to fetch page content (blocks) from Notion
+app.post("/api/notion/page-content", async (req, res) => {
+  try {
+    const { pageId } = req.body;
+
+    if (!pageId) {
+      return res
+        .status(400)
+        .json({ error: "pageId is required in request body" });
+    }
+
+    if (!notionToken) {
+      return res.status(500).json({ error: "NOTION_KEY is not configured" });
+    }
+
+    // Fetch all blocks from the page
+    const blocks = [];
+    for await (const block of iteratePaginatedAPI(notion.blocks.children.list, {
+      block_id: pageId,
+    })) {
+      blocks.push(block);
+    }
+
+    // Parse text from each block
+    const parsedBlocks = blocks.map((block) => getTextFromBlock(block));
+
+    res.json({
+      success: true,
+      pageId: pageId,
+      totalBlocks: parsedBlocks.length,
+      blocks: parsedBlocks,
+    });
+  } catch (error) {
+    console.error("Error fetching page content:", error);
     res.status(500).json({ error: error.message });
   }
 });
