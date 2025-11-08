@@ -9,6 +9,11 @@ async function fetchNotionData() {
     });
     const data = await response.json();
     console.log("Notion data:", data);
+    console.log("Page ID:", data.properties);
+
+    notionPageId = data.properties.ID.rich_text[0].plain_text;
+    console.log("Notion page ID:", notionPageId);
+    fetchNotionPageContent(notionPageId);
 
     // Process and display the data
     // Example: populate project cards
@@ -29,25 +34,6 @@ async function fetchNotionData() {
   }
 }
 
-// Fetch a specific page from Notion
-async function fetchNotionPage(pageId) {
-  try {
-    const response = await fetch("/api/notion/page", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ pageId }),
-    });
-    const data = await response.json();
-    console.log("Notion page data:", data);
-    return data;
-  } catch (error) {
-    console.error("Error fetching Notion page:", error);
-    return null;
-  }
-}
-
 // Fetch page content (blocks) from Notion
 async function fetchNotionPageContent(pageId) {
   try {
@@ -63,7 +49,6 @@ async function fetchNotionPageContent(pageId) {
     const data = await response.json();
 
     console.log("Page content received. Page ID:", data.pageId);
-    console.log("Total blocks:", data.totalBlocks);
 
     // Display the content on your webpage
     if (data.blocks && data.blocks.length > 0) {
@@ -103,12 +88,7 @@ async function fetchNotionPageContent(pageId) {
   }
 }
 
-// Call when page loads
+// Call when the page loads
 document.addEventListener("DOMContentLoaded", () => {
   fetchNotionData();
-
-  // Example: If you have a page ID, you can fetch its content
-  // Uncomment and replace with your actual page ID:
-  // const pageId = "your-page-id-here";
-  // fetchNotionPageContent(pageId);
 });

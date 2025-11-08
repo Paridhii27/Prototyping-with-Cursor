@@ -22,18 +22,15 @@ const databaseId = process.env.NOTION_DATABASE_ID?.trim();
 const notionPageId = process.env.NOTION_PAGE_ID?.trim();
 
 console.log("Environment Variables Check:");
-console.log("NOTION_KEY exists:", !!notionToken);
-console.log("NOTION_KEY length:", notionToken?.length || 0);
-console.log("NOTION_DATABASE_ID exists:", !!databaseId);
-console.log(
-  "NOTION_DATABASE_ID:",
-  databaseId ? `${databaseId.substring(0, 8)}...` : "missing"
-);
-console.log("NOTION_PAGE_ID exists:", !!notionPageId);
-
 // Validate token before initializing client
 if (!notionToken) {
   console.error("ERROR: NOTION_KEY is not set!");
+} else if (!databaseId) {
+  console.error("ERROR: NOTION_DATABASE_ID is not set!");
+} else if (!notionPageId) {
+  console.error("ERROR: NOTION_PAGE_ID is not set!");
+} else {
+  console.log("Environment variables are set correctly");
 }
 
 // Initialize Notion client
@@ -41,7 +38,7 @@ const notion = new Client({
   auth: notionToken,
 });
 
-// Helper function to get plain text from rich text blocks
+//Function to get plain text from rich text blocks in Notion
 const getPlainTextFromRichText = (richText) => {
   if (!richText || !Array.isArray(richText)) return "";
   return richText.map((t) => t.plain_text).join("");
@@ -128,9 +125,9 @@ const getTextFromBlock = (block) => {
   };
 };
 
-// Notion webhook endpoint
+// Notion webhook endpoint verification
 app.post("/notion-webhook", (req, res) => {
-  console.log("📥 Incoming webhook from Notion:");
+  console.log("Incoming webhook from Notion:");
   console.log(JSON.stringify(req.body, null, 2));
 
   // Handle verification request
@@ -215,23 +212,6 @@ app.post("/api/notion/page-content", async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching page content:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Example endpoint to get a specific page
-app.post("/api/notion/page", async (req, res) => {
-  try {
-    const { pageId } = req.body;
-    if (!pageId) {
-      return res
-        .status(400)
-        .json({ error: "pageId is required in request body" });
-    }
-    const response = await notion.pages.retrieve({ page_id: pageId });
-    res.json(response);
-  } catch (error) {
-    console.error("Error fetching page:", error);
     res.status(500).json({ error: error.message });
   }
 });
