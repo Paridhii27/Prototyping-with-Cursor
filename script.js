@@ -1,4 +1,4 @@
-// Fetch data from Notion via your server
+// Fetch data from Notion via the server
 async function fetchNotionData() {
   try {
     const response = await fetch("/api/notion", {
@@ -9,14 +9,25 @@ async function fetchNotionData() {
     });
     const data = await response.json();
     console.log("Notion data:", data);
-    console.log("Page ID:", data.properties);
-
-    notionPageId = data.properties.ID.rich_text[0].plain_text;
-    console.log("Notion page ID:", notionPageId);
-    fetchNotionPageContent(notionPageId);
-
+    console.log("Properties 1:", data.results[0].properties);
+    console.log("Project 1 Website:", data.results[0].properties.Website.url);
+    console.log("Project 1 Images:", data.results[0].properties.Images.id);
+    console.log("Properties 1:", data.results[1].properties);
+    console.log("Project 2 Website:", data.results[1].properties.Website.url);
+    console.log("Project 2 Images:", data.results[1].properties.Images.id);
+    console.log("Properties 1:", data.results[2].properties);
+    console.log("Project 3 Website:", data.results[2].properties.Website.url);
+    console.log("Project 3 Images:", data.results[2].properties.Images.id);
+    console.log("Properties 1:", data.results[3].properties);
+    console.log("Project 4 Website:", data.results[3].properties.Website.url);
+    console.log("Project 4 Images:", data.results[3].properties.Images.id);
+    console.log("Properties 1:", data.results[4].properties);
+    console.log("Project 5 Website:", data.results[4].properties.Website.url);
+    console.log("Project 5 Images:", data.results[4].properties.Images.id);
+    console.log("Properties 1:", data.results[5].properties);
+    console.log("Project 6 Website:", data.results[5].properties.Website.url);
+    console.log("Project 6 Images:", data.results[5].properties.Images.id);
     // Process and display the data
-    // Example: populate project cards
     if (data.results) {
       const projectCards = document.querySelectorAll(".project-card");
       data.results.forEach((page, index) => {
