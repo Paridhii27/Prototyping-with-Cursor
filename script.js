@@ -15,9 +15,13 @@ async function fetchNotionData() {
       data.results[0].properties.Title.title[0].plain_text
     );
     console.log("Project 1 Website:", data.results[0].properties.Website.url);
+    console.log(
+      "Project 1 Image: ",
+      data.results[0].properties.Images.files[0].file.url
+    );
 
     if (data.results && Array.isArray(data.results)) {
-      const projectNames = document.querySelectorAll(".project-name");
+      const projectName = document.getElementById(".project-name");
       const projectWebsites = document.querySelectorAll(".project-website");
       data.results.forEach((result, index) => {
         console.log(`Properties:`, result[index].properties);
@@ -27,16 +31,14 @@ async function fetchNotionData() {
               `Project Name:`,
               result[index].properties.Title.title[0].plain_text
             );
-            projectNames.push(
-              data.results[index].properties.Name.title[0].plain_text
+            projectName.innerHTML =
+              result[index].properties.Title.title[0].plain_text;
+          }
+          if (result[index].properties.Website?.url) {
+            console.log(
+              `Project Website:`,
+              result[index].properties.Website.url
             );
-          }
-          if (result.properties.Website?.url) {
-            console.log(`Project Website:`, result.properties.Website.url);
-            projectWebsites.push(data.results[index].properties.Website.url);
-          }
-          if (result.properties.Images?.id) {
-            console.log(`Project Images:`, result[index].properties.Images.id);
           }
         }
       });
