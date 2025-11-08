@@ -50,58 +50,58 @@ async function fetchNotionData() {
 }
 
 // Fetch page content (blocks) from Notion
-async function fetchNotionPageContent(pageId) {
-  try {
-    console.log("Fetching page content for page ID:", pageId);
+// async function fetchNotionPageContent(pageId) {
+//   try {
+//     console.log("Fetching page content for page ID:", pageId);
 
-    const response = await fetch("/api/notion/page-content", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ pageId: pageId }),
-    });
-    const data = await response.json();
+//     const response = await fetch("/api/notion/page-content", {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({ pageId: pageId }),
+//     });
+//     const data = await response.json();
 
-    console.log("Page content received. Page ID:", data.pageId);
+//     console.log("Page content received. Page ID:", data.pageId);
 
-    // Display the content on your webpage
-    if (data.blocks && data.blocks.length > 0) {
-      const container = document.querySelector(".description-text");
-      if (container) {
-        const previousContent = container.innerHTML;
+//     // Display the content on your webpage
+//     if (data.blocks && data.blocks.length > 0) {
+//       const container = document.querySelector(".description-text");
+//       if (container) {
+//         const previousContent = container.innerHTML;
 
-        // Clear existing content
-        container.innerHTML = "";
+//         // Clear existing content
+//         container.innerHTML = "";
 
-        // Add each block's text
-        data.blocks.forEach((block) => {
-          if (block.text) {
-            const p = document.createElement("p");
-            p.textContent = block.text;
-            p.className = `notion-block notion-block-${block.type}`;
-            container.appendChild(p);
-          }
-        });
+//         // Add each block's text
+//         data.blocks.forEach((block) => {
+//           if (block.text) {
+//             const p = document.createElement("p");
+//             p.textContent = block.text;
+//             p.className = `notion-block notion-block-${block.type}`;
+//             container.appendChild(p);
+//           }
+//         });
 
-        // Check if content changed
-        if (previousContent !== container.innerHTML) {
-          console.log("Page content updated on website");
-        } else {
-          console.log("Page content unchanged");
-        }
-      } else {
-        console.log("Container not found");
-      }
-    } else {
-      console.log("No blocks to display");
-    }
-    return data;
-  } catch (error) {
-    console.error("Error fetching Notion page content:", error);
-    return null;
-  }
-}
+//         // Check if content changed
+//         if (previousContent !== container.innerHTML) {
+//           console.log("Page content updated on website");
+//         } else {
+//           console.log("Page content unchanged");
+//         }
+//       } else {
+//         console.log("Container not found");
+//       }
+//     } else {
+//       console.log("No blocks to display");
+//     }
+//     return data;
+//   } catch (error) {
+//     console.error("Error fetching Notion page content:", error);
+//     return null;
+//   }
+// }
 
 // Call when the page loads
 document.addEventListener("DOMContentLoaded", () => {
