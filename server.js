@@ -182,6 +182,8 @@ app.post("/api/notion/page-content", async (req, res) => {
   try {
     const { pageId } = req.body;
 
+    console.log("Page ID:", pageId);
+
     if (!pageId) {
       return res
         .status(400)
@@ -202,6 +204,8 @@ app.post("/api/notion/page-content", async (req, res) => {
 
     // Parse text from each block
     const parsedBlocks = blocks.map((block) => getTextFromBlock(block));
+
+    console.log("Total blocks fetched:", parsedBlocks.length);
 
     res.json({
       success: true,

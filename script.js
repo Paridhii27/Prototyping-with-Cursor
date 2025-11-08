@@ -51,6 +51,8 @@ async function fetchNotionPage(pageId) {
 // Fetch page content (blocks) from Notion
 async function fetchNotionPageContent(pageId) {
   try {
+    console.log("Fetching page content for page ID:", pageId);
+
     const response = await fetch("/api/notion/page-content", {
       method: "POST",
       headers: {
@@ -59,12 +61,16 @@ async function fetchNotionPageContent(pageId) {
       body: JSON.stringify({ pageId: pageId }),
     });
     const data = await response.json();
-    console.log("Notion page content:", data);
+
+    console.log("Page content received. Page ID:", data.pageId);
+    console.log("Total blocks:", data.totalBlocks);
 
     // Display the content on your webpage
     if (data.blocks && data.blocks.length > 0) {
       const container = document.querySelector(".description-text");
       if (container) {
+        const previousContent = container.innerHTML;
+
         // Clear existing content
         container.innerHTML = "";
 
@@ -77,7 +83,18 @@ async function fetchNotionPageContent(pageId) {
             container.appendChild(p);
           }
         });
+
+        // Check if content changed
+        if (previousContent !== container.innerHTML) {
+          console.log("Page content updated on website");
+        } else {
+          console.log("Page content unchanged");
+        }
+      } else {
+        console.log("Container not found");
       }
+    } else {
+      console.log("No blocks to display");
     }
     return data;
   } catch (error) {
