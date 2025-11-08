@@ -17,6 +17,24 @@ app.use(express.json());
 // Serve static files (HTML, CSS, JS)
 app.use(express.static(__dirname));
 
+// Debug: Check if environment variables are loaded
+const notionToken = process.env.NOTION_KEY?.trim(); // Remove any whitespace
+const databaseId = process.env.NOTION_DATABASE_ID?.trim();
+
+console.log("🔍 Environment Check:");
+console.log("NOTION_KEY exists:", !!notionToken);
+console.log("NOTION_KEY length:", notionToken?.length || 0);
+console.log("NOTION_DATABASE_ID exists:", !!databaseId);
+console.log(
+  "NOTION_DATABASE_ID:",
+  databaseId ? `${databaseId.substring(0, 8)}...` : "missing"
+);
+
+// Validate token before initializing client
+if (!notionToken) {
+  console.error("❌ ERROR: NOTION_KEY is not set!");
+}
+
 // Initialize Notion client
 const notion = new Client({
   auth: process.env.NOTION_TOKEN,
@@ -47,7 +65,7 @@ app.post("/notion-webhook", (req, res) => {
 });
 
 // API endpoint to fetch Notion data
-app.get("/api/notion", async (req, res) => {
+app.post("/api/notion", async (req, res) => {
   try {
     // Replace with your actual database ID
     const databaseId = process.env.NOTION_DATABASE_ID;
@@ -64,9 +82,14 @@ app.get("/api/notion", async (req, res) => {
 });
 
 // Example endpoint to get a specific page
-app.get("/api/notion/page/:pageId", async (req, res) => {
+app.post("/api/notion/page", async (req, res) => {
   try {
-    const { pageId } = req.params;
+    const { pageId } = req.body;
+    if (!pageId) {
+      return res
+        .status(400)
+        .json({ error: "pageId is required in request body" });
+    }
     const response = await notion.pages.retrieve({ page_id: pageId });
     res.json(response);
   } catch (error) {

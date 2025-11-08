@@ -1,7 +1,12 @@
 // Fetch data from Notion via your server
 async function fetchNotionData() {
   try {
-    const response = await fetch("/api/notion");
+    const response = await fetch("/api/notion", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
     const data = await response.json();
     console.log("Notion data:", data);
 
